@@ -1,8 +1,4 @@
-﻿using MeshNetworkServer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
 using System.Windows.Forms;
 using NLog;
 
@@ -10,10 +6,10 @@ namespace MeshNetworkServerGUI
 {
     static class Program
     {
-        public static Logger log;
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
+        public static Logger log;
         [STAThread]
         static void Main()
         {
@@ -21,7 +17,6 @@ namespace MeshNetworkServerGUI
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
-            MeshNetworkServerSocket.SocketUdpServer.SocketListenStart(8005);
         }
 
         private static void StartLoging()

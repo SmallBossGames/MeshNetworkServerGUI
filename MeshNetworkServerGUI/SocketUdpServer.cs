@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
@@ -10,20 +8,16 @@ namespace MeshNetworkServerSocket
 {
     static class SocketUdpServer
     {
-        static int localPort;
-        static Socket listeningSocket;
+        private static int localPort;
+        private static Socket listeningSocket;
 
         public static void SocketListenStart(int port)
         {
             localPort = port;
-
             try
             {
                 listeningSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                /*
-                 * TODO : следить за закрытием окна и сделать кнопки выключения и перезапуска сервера
-                 * 
-                 * Заготовка для слушанья в отдельном потоке:
+                /* Заготовка для слушанья в отдельном потоке:
                  * Task listeningTask = new Task(Listen);
                  * listeningTask.Start();
                  */
@@ -31,11 +25,11 @@ namespace MeshNetworkServerSocket
             }
             catch (Exception ex)
             {
-                MeshNetworkServerGUI.Program.log.Error("Socket Err: {0}", ex.Message);
+                MeshNetworkServerGUI.Program.log.Error("Socket: {0}", ex.Message);
             }
             finally
             {
-                MeshNetworkServerGUI.Program.log.Error("Socket close");
+                MeshNetworkServerGUI.Program.log.Trace("Socket close");
                 Close();
             }
         }
@@ -50,13 +44,22 @@ namespace MeshNetworkServerSocket
                 while (true)
                 {
                     int bytes = 0;
-                    byte[] dataIn = new byte[36];
-
+                    byte[] dataIn = new byte[MeshNetworkServer.Package.bufferSize];
+                    bool flag_close = false;
                     EndPoint remoteIp = new IPEndPoint(IPAddress.Any, 0);
 
                     do
                     {
-                        bytes = listeningSocket.ReceiveFrom(dataIn, ref remoteIp);
+                        try
+                        {
+                            bytes = listeningSocket.ReceiveFrom(dataIn, ref remoteIp);
+                        }
+                        catch(Exception exept)
+                        {
+                            MeshNetworkServerGUI.Program.log.Trace("Server hard shutdown: {0}", exept.Message);
+                            flag_close = true;
+                            break;
+                        }
                         if (dataIn.Length != MeshNetworkServer.Package.bufferSize)
                         {
                             MeshNetworkServerGUI.Program.log.Warn("Received package invalid.");
@@ -76,11 +79,12 @@ namespace MeshNetworkServerSocket
                         }
                     }
                     while (listeningSocket.Available > 0);
+                    if (flag_close) break;
                 }
             }
             catch (Exception ex)
             {
-                MeshNetworkServerGUI.Program.log.Error("Listen Err: {0}", ex.Message);
+                MeshNetworkServerGUI.Program.log.Error("Listen: {0}", ex.Message);
             }
             finally
             {
@@ -98,11 +102,24 @@ namespace MeshNetworkServerSocket
                 listeningSocket = null;
             }
         }
-        
+
+        public static void SocketListenEnd()
+        {
+            //TODO : исправить остановку сервера, неправильно завершается listen, 
+            //т.к. прерывается блокирующая операция ReceiveFrom (ну, в приниципе, и так сойдёт)
+            Close();
+            MeshNetworkServerGUI.Program.log.Trace("Forsed stop");
+        }
+
+
         private static bool IsUnicue(byte[] data)
         {
-            // TODO: проверка на уникальность
+            uint number = BitConverter.ToUInt32(data, 0);
+            // TODO: проверка на уникальность:
+            // поиск номера в бд и если его там нет, то:
             return true;
+            // иначе:
+            // return false;
         }
     }
 }
