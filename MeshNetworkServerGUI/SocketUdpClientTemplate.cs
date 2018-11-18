@@ -30,7 +30,7 @@ namespace MeshNetworkServerClient
         static CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
         static CancellationToken tokenReceive = CancellationTokenSource.Token;
         static CancellationTokenSource tokenSource = new CancellationTokenSource();
-        static CancellationTokenSource tokenSend = new CancellationTokenSource();
+        static CancellationToken tokenSend = tokenSource.Token;
 
         private static bool flag_stop;
 
@@ -39,7 +39,7 @@ namespace MeshNetworkServerClient
             try
             {
                 flag_stop = false;
-                taskReceive = new Task(() => ReceiveMessage(tokenReceive), tokenReceive);
+                taskReceive = new Task(() => ReceiveMessage(tokenReceive));
                 taskReceive.Start();
                 taskSend = new Task(() => SendMessage(tokenSend));
                 taskSend.Start();
@@ -50,7 +50,7 @@ namespace MeshNetworkServerClient
             }
         }
 
-        private static void SendMessage(CancellationTokenSource token)
+        private static void SendMessage(CancellationToken token)
         {
             UdpClient sender = new UdpClient();
             byte[] data = new byte[Package.bufferSize];
@@ -58,6 +58,7 @@ namespace MeshNetworkServerClient
             {
                 while (true)
                 {
+                    if (token.IsCancellationRequested) return;
                     /* Здесь заполняете данные о ваших датчиках при помощи методов в файле Program.cs
                      * Для примерпа представлен вызов функции GenerateData, но это просто пример!
                      */
@@ -103,6 +104,7 @@ namespace MeshNetworkServerClient
             {
                 while (true)
                 {
+                    if (token.IsCancellationRequested) return;
                     byte[] data = receiver.Receive(ref remoteIp); // входящий пакет байт
                     Package pack = Package.FromBinary(data); //преобразование в пакет
                     /*
