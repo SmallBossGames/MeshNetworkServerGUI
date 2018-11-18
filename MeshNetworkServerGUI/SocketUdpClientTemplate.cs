@@ -24,7 +24,6 @@ namespace MeshNetworkServerClient
         private static string remoteAddress = "127.0.0.1"; // адрес для отправки
         private static int remotePort = 8005; // порт для отправки
         private static int localPort = 8004; // порт для получения
-        private static Thread receiveThread;
 
         static Task taskReceive;
         static Task taskSend;
@@ -38,16 +37,12 @@ namespace MeshNetworkServerClient
         public static void StartClient()
         {
             try
-            {                
+            {
                 flag_stop = false;
                 taskReceive = new Task(() => ReceiveMessage(tokenReceive), tokenReceive);
                 taskReceive.Start();
-
-                // receiveThread = new Thread(new ThreadStart(ReceiveMessage));
-                // receiveThread.Start();
                 taskSend = new Task(() => SendMessage(tokenSend));
                 taskSend.Start();
-               // SendMessage();
             }
             catch (Exception ex)
             {
@@ -70,7 +65,6 @@ namespace MeshNetworkServerClient
                     pack.ToBinary(data);
                     sender.Send(data, data.Length, remoteAddress, remotePort);
                     Thread.Sleep(100);//задержка между сообщениями
-                   // if (flag_stop) break;
                 }
             }
             catch (Exception exception)
@@ -136,7 +130,7 @@ namespace MeshNetworkServerClient
         {
             // Эту функцию тоже желательно не так коряво реализовать, 
             // она на данный момент вообще не всего клиента завершает
-           // receiveThread.Abort();
+            // receiveThread.Abort();
             CancellationTokenSource.Cancel();
             tokenSource.Cancel();
             flag_stop = true;
