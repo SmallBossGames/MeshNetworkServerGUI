@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 
 namespace MeshNetworkServerClient
 {
@@ -17,23 +18,36 @@ namespace MeshNetworkServerClient
      */
     class SocketUdpClientTemplate
     {
-        //Тут вы должны придумать как вы будете хранить все соседние узлы
-        //Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
-        //Здесь для примера храниться только 1 сосед
+        // Тут вы должны придумать как вы будете хранить все соседние узлы
+        // Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
+        // Здесь для примера храниться только 1 сосед
         private static string remoteAddress = "127.0.0.1"; // адрес для отправки
         private static int remotePort = 8005; // порт для отправки
         private static int localPort = 8004; // порт для получения
         private static Thread receiveThread;
+
+        static Task taskReceive;
+        static Task taskSend;
+        static CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+        static CancellationToken tokenReceive = CancellationTokenSource.Token;
+        static CancellationTokenSource tokenSource = new CancellationTokenSource();
+        static CancellationTokenSource tokenSend = new CancellationTokenSource();
+
         private static bool flag_stop;
 
         public static void StartClient()
         {
             try
-            {
+            {                
                 flag_stop = false;
-                receiveThread = new Thread(new ThreadStart(ReceiveMessage));
-                receiveThread.Start();
-                SendMessage();
+                taskReceive = new Task(() => ReceiveMessage(tokenReceive), tokenReceive);
+                taskReceive.Start();
+
+                // receiveThread = new Thread(new ThreadStart(ReceiveMessage));
+                // receiveThread.Start();
+                taskSend = new Task(() => SendMessage(tokenSend));
+                taskSend.Start();
+               // SendMessage();
             }
             catch (Exception ex)
             {
@@ -41,7 +55,7 @@ namespace MeshNetworkServerClient
             }
         }
 
-        private static void SendMessage()
+        private static void SendMessage(CancellationTokenSource token)
         {
             UdpClient sender = new UdpClient();
             byte[] data = new byte[Package.bufferSize];
@@ -56,7 +70,7 @@ namespace MeshNetworkServerClient
                     pack.ToBinary(data);
                     sender.Send(data, data.Length, remoteAddress, remotePort);
                     Thread.Sleep(100);//задержка между сообщениями
-                    if (flag_stop) break;
+                   // if (flag_stop) break;
                 }
             }
             catch (Exception exception)
@@ -87,7 +101,7 @@ namespace MeshNetworkServerClient
             return pack;
         }
 
-        private static void ReceiveMessage()
+        private static void ReceiveMessage(CancellationToken token)
         {
             UdpClient receiver = new UdpClient(localPort);
             IPEndPoint remoteIp = null; // адрес входящего подключения
@@ -121,8 +135,10 @@ namespace MeshNetworkServerClient
         public static void ClientStop()
         {
             // Эту функцию тоже желательно не так коряво реализовать, 
-            //она на данный момент вообще не всего клиента завершает
-            receiveThread.Abort();
+            // она на данный момент вообще не всего клиента завершает
+           // receiveThread.Abort();
+            CancellationTokenSource.Cancel();
+            tokenSource.Cancel();
             flag_stop = true;
         }
     }
