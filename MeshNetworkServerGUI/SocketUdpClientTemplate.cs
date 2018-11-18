@@ -104,7 +104,7 @@ namespace MeshNetworkServerClient
             {
                 while (true)
                 {                    
-                    if (token.IsCancellationRequested) { receiver.Close(); return; }
+                   // if (token.IsCancellationRequested) { receiver.Close(); return; }
                     byte[] data = receiver.Receive(ref remoteIp); // входящий пакет байт
                     Package pack = Package.FromBinary(data); //преобразование в пакет
                     /*
