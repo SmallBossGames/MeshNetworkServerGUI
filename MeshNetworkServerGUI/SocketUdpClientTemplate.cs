@@ -71,18 +71,19 @@ namespace MeshNetworkServerClient
 
         private static Package GenerateData()
         {
+            Random rand = new Random();
             Package pack = new Package();
             //Здесь вы генирируете пакеты с реалистичными рандомными значениями
             //Не просто рандом, а хотябы в реалистичных границах
             //Для понимания смотрите файл Package.cs
-            pack.PackageId = 11;        // Для примера
-            pack.NodeId = 1;            // Для примера
-            pack.Time = DateTime.Now;   // Для примера
-            pack.Humidity = 11;         // Для примера
-            pack.IsFire = false;        // Для примера
-            pack.Lighting = 11;         // Для примера
-            pack.Pressure = 11;         // Для примера
-            pack.Temperature = 11;      // Для примера
+            pack.PackageId = (uint)rand.Next(100);  // Для примера
+            pack.NodeId = 1;                        // Для примера
+            pack.Time = DateTime.Now;               // Для примера
+            pack.Humidity = 11;                     // Для примера
+            pack.IsFire = false;                    // Для примера
+            pack.Lighting = 11;                     // Для примера
+            pack.Pressure = 11;                     // Для примера
+            pack.Temperature = 11;                  // Для примера
             //
             return pack;
         }
