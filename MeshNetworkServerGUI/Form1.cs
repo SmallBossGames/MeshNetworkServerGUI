@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -59,6 +60,21 @@ namespace MeshNetworkServerGUI
                 button_client.BackColor = Color.Red;
                 button_client.Text = "Start test client";
             }
+        }
+
+        private void showCharts_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var nodeNumber = int.Parse(nodeNumberTextBox.Text);
+                (new ChartsForm(nodeNumber)).Show();
+            }
+            catch (FormatException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            
         }
     }
 }

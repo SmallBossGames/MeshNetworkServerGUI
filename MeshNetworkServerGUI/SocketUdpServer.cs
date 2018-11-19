@@ -3,16 +3,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
+using MeshNetworkServer;
+using MeshNetworkServerGUI;
 
 namespace MeshNetworkServerSocket
 {
     static class SocketUdpServer
     {
+        public static event EventHandler<PackageModel> OnRecivePackage; 
+
         private static int localPort;
         private static Socket listeningSocket;
-
+        private static uint []massId;
+        private static int n = 0;
+        private const int MASS_LENGHT = 255;
         public static void SocketListenStart(int port)
         {
+            massId = new uint[MASS_LENGHT];
             localPort = port;
             try
             {
@@ -70,7 +77,8 @@ namespace MeshNetworkServerSocket
                             {
                                 MeshNetworkServer.Package packIn = MeshNetworkServer.Package.FromBinary(dataIn);
                                 MeshNetworkServerGUI.Program.log.Debug("Received unique package.");
-                                // TODO: отправка спарсенного пакета в БД
+
+                                SavePackage(packIn);
                             }
                             else
                             {
@@ -115,11 +123,26 @@ namespace MeshNetworkServerSocket
         private static bool IsUnicue(byte[] data)
         {
             uint number = BitConverter.ToUInt32(data, 0);
-            // TODO: проверка на уникальность:
-            // поиск номера в бд и если его там нет, то:
-            return true;
-            // иначе:
-            // return false;
+            for(int i = 0; i < MASS_LENGHT; i++)
+            {
+                if (massId[i] == number) return false;
+            }
+            massId[n] = number;
+            n++;
+            if (n == MASS_LENGHT) n = 0;
+            return true; 
+        }
+
+        private static void SavePackage(Package package)
+        {
+            var packageModel = PackageConverter.ToPackageModel(package);
+
+            OnRecivePackage(null, packageModel);
+            using (var context = new ApplicationDbContext())
+            {
+                context.Packages.Add(packageModel);
+                context.SaveChanges();
+            }
         }
     }
 }
