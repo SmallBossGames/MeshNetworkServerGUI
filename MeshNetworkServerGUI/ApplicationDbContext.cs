@@ -12,7 +12,7 @@ namespace MeshNetworkServerGUI
     {
         public DbSet<PackageModel> Packages { get; set; }
 
-        public List<List<PackageModel>> GetPackagesAsync()
+        public async Task<List<List<PackageModel>>> GetPackagesAsync()
         {
             var query =
                 from pack in Packages
@@ -23,7 +23,7 @@ namespace MeshNetworkServerGUI
                              select data).ToList()
                 select packs;
 
-            return query.ToList();
+            return await query.ToListAsync();
         }
     }
 }
