@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Windows.Forms;
-using System.Threading.Tasks;
 
 namespace MeshNetworkServerClient
 {
@@ -18,20 +17,13 @@ namespace MeshNetworkServerClient
      */
     class SocketUdpClientTemplate
     {
-        // Тут вы должны придумать как вы будете хранить все соседние узлы
-        // Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
-        // Здесь для примера храниться только 1 сосед
+        //Тут вы должны придумать как вы будете хранить все соседние узлы
+        //Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
+        //Здесь для примера храниться только 1 сосед
         private static string remoteAddress = "127.0.0.1"; // адрес для отправки
         private static int remotePort = 8005; // порт для отправки
         private static int localPort = 8004; // порт для получения
-
-        static Task taskReceive;
-        static Task taskSend;
-        static CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
-        static CancellationToken tokenReceive = CancellationTokenSource.Token;
-        static CancellationTokenSource tokenSource = new CancellationTokenSource();
-        static CancellationToken tokenSend = tokenSource.Token;
-
+        private static Thread receiveThread;
         private static bool flag_stop;
 
         public static void StartClient()
@@ -39,10 +31,9 @@ namespace MeshNetworkServerClient
             try
             {
                 flag_stop = false;
-                taskReceive = new Task(() => ReceiveMessage(tokenReceive));
-                taskReceive.Start();
-                taskSend = new Task(() => SendMessage(tokenSend));
-                taskSend.Start();
+                receiveThread = new Thread(new ThreadStart(ReceiveMessage));
+                receiveThread.Start();
+                SendMessage();
             }
             catch (Exception ex)
             {
@@ -50,7 +41,7 @@ namespace MeshNetworkServerClient
             }
         }
 
-        private static void SendMessage(CancellationToken token)
+        private static void SendMessage()
         {
             UdpClient sender = new UdpClient();
             byte[] data = new byte[Package.bufferSize];
@@ -58,7 +49,6 @@ namespace MeshNetworkServerClient
             {
                 while (true)
                 {
-                    if (token.IsCancellationRequested) return;
                     /* Здесь заполняете данные о ваших датчиках при помощи методов в файле Program.cs
                      * Для примерпа представлен вызов функции GenerateData, но это просто пример!
                      */
@@ -66,6 +56,7 @@ namespace MeshNetworkServerClient
                     pack.ToBinary(data);
                     sender.Send(data, data.Length, remoteAddress, remotePort);
                     Thread.Sleep(100);//задержка между сообщениями
+                    if (flag_stop) break;
                 }
             }
             catch (Exception exception)
@@ -96,15 +87,14 @@ namespace MeshNetworkServerClient
             return pack;
         }
 
-        private static void ReceiveMessage(CancellationToken token)
+        private static void ReceiveMessage()
         {
             UdpClient receiver = new UdpClient(localPort);
             IPEndPoint remoteIp = null; // адрес входящего подключения
             try
             {
                 while (true)
-                {                    
-                   // if (token.IsCancellationRequested) { receiver.Close(); return; }
+                {
                     byte[] data = receiver.Receive(ref remoteIp); // входящий пакет байт
                     Package pack = Package.FromBinary(data); //преобразование в пакет
                     /*
@@ -131,10 +121,8 @@ namespace MeshNetworkServerClient
         public static void ClientStop()
         {
             // Эту функцию тоже желательно не так коряво реализовать, 
-            // она на данный момент вообще не всего клиента завершает
-            // receiveThread.Abort();
-            CancellationTokenSource.Cancel();
-            tokenSource.Cancel();
+            //она на данный момент вообще не всего клиента завершает
+            receiveThread.Abort();
             flag_stop = true;
         }
     }
