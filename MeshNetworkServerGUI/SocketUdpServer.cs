@@ -10,9 +10,12 @@ namespace MeshNetworkServerSocket
     {
         private static int localPort;
         private static Socket listeningSocket;
-
+        private static uint []massId;
+        private static int n = 0;
+        private const int MASS_LENGHT = 255;
         public static void SocketListenStart(int port)
         {
+            massId = new uint[MASS_LENGHT];
             localPort = port;
             try
             {
@@ -115,11 +118,14 @@ namespace MeshNetworkServerSocket
         private static bool IsUnicue(byte[] data)
         {
             uint number = BitConverter.ToUInt32(data, 0);
-            // TODO: проверка на уникальность:
-            // поиск номера в бд и если его там нет, то:
-            return true;
-            // иначе:
-            // return false;
+            for(int i = 0; i < MASS_LENGHT; i++)
+            {
+                if (massId[i] == number) return false;
+            }
+            massId[n] = number;
+            n++;
+            if (n == MASS_LENGHT) n = 0;
+            return true; 
         }
     }
 }
