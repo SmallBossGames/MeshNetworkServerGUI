@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MeshNetworkServerClient
@@ -10,30 +11,36 @@ namespace MeshNetworkServerClient
     /* 
      * ПЕРЕД НАЧАЛОМ РАБОТЫ ВАЖНО ПРОЧИТАТЬ КОД И ВСЕ КОММЕНТАРИИ В ЭТОМ ФАЙЛЕ.
      * Можно сделать свою реализацию UDP узла, а можно воспользоватьэтим шаблоном.
-     * Шаблон специально коряво написан, чтобы у всех вышел разный код, 
+     * Шаблон СПЕЦИАЛЬНО КОРЯВО НАПИСАН, чтобы у всех вышел разный код, 
      * ведь все будут по разному решать проблемы и баги.
      * Для тестирования работы вашего клиента можно запустить приложение и стартануть и сервер,
      * сервер пишет в логи все свои действия, там читайте, через них дебажте
      */
     class SocketUdpClientTemplate
     {
-        //Тут вы должны придумать как вы будете хранить все соседние узлы
-        //Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
-        //Здесь для примера храниться только 1 сосед
+        /* Тут вы должны придумать как вы будете хранить все соседние узлы
+        * Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
+        * Здесь для примера храниться только 1 сосед*/
         private static string remoteAddress = "127.0.0.1"; // адрес для отправки
         private static int remotePort = 8005; // порт для отправки
         private static int localPort = 8004; // порт для получения
-        private static Thread receiveThread;
-        private static bool flag_stop;
+        /* из-за не динамических портов два раза клиента или двух клиентов на одном пк не запустить,
+         * надо иначе реализовать этот момент, читайте метанит */
+        static Task taskReceive;
+        static Task taskSend;
+        static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        static CancellationToken tokenReceive = cancellationTokenSource.Token;
+        static CancellationTokenSource tokenSource = new CancellationTokenSource();
+        static CancellationToken tokenSend = tokenSource.Token;
 
         public static void StartClient()
         {
             try
             {
-                flag_stop = false;
-                receiveThread = new Thread(new ThreadStart(ReceiveMessage));
-                receiveThread.Start();
-                SendMessage();
+                taskReceive = new Task(() => ReceiveMessage(tokenReceive));
+                taskReceive.Start();
+                taskSend = new Task(() => SendMessage(tokenSend));
+                taskSend.Start();
             }
             catch (Exception ex)
             {
@@ -41,7 +48,7 @@ namespace MeshNetworkServerClient
             }
         }
 
-        private static void SendMessage()
+        private static void SendMessage(CancellationToken token)
         {
             UdpClient sender = new UdpClient();
             byte[] data = new byte[Package.bufferSize];
@@ -49,14 +56,13 @@ namespace MeshNetworkServerClient
             {
                 while (true)
                 {
+                    if (token.IsCancellationRequested) break;
                     /* Здесь заполняете данные о ваших датчиках при помощи методов в файле Program.cs
-                     * Для примерпа представлен вызов функции GenerateData, но это просто пример!
-                     */
+                     * Для примерпа представлен вызов функции GenerateData, но это просто пример!*/
                     Package pack = GenerateData();
                     pack.ToBinary(data);
                     sender.Send(data, data.Length, remoteAddress, remotePort);
                     Thread.Sleep(100);//задержка между сообщениями
-                    if (flag_stop) break;
                 }
             }
             catch (Exception exception)
@@ -73,9 +79,9 @@ namespace MeshNetworkServerClient
         {
             Random rand = new Random();
             Package pack = new Package();
-            //Здесь вы генирируете пакеты с реалистичными рандомными значениями
-            //Не просто рандом, а хотябы в реалистичных границах
-            //Для понимания смотрите файл Package.cs
+            /* Здесь вы генирируете пакеты с реалистичными рандомными значениями
+            *  Не просто рандом, а хотябы в реалистичных границах
+            *  Для понимания смотрите файл Package.cs */
             pack.PackageId = (uint)rand.Next(100);  // Для примера
             pack.NodeId = 1;                        // Для примера
             pack.Time = DateTime.Now;               // Для примера
@@ -87,8 +93,7 @@ namespace MeshNetworkServerClient
             //
             return pack;
         }
-
-        private static void ReceiveMessage()
+        private static void ReceiveMessage(CancellationToken token)
         {
             UdpClient receiver = new UdpClient(localPort);
             IPEndPoint remoteIp = null; // адрес входящего подключения
@@ -102,9 +107,9 @@ namespace MeshNetworkServerClient
                      * Здесь нужно проверить id пакета (как? - смотри файл Package.cs и думай)
                      * И если пакет с таким id ранее не был получен, то:
                      *     - отправить всем соседям
-                     *      (хорошо бы использовать широкофещательную рассылку: https://metanit.com/sharp/net/5.3.php)
-                     *     - сохранить его id в список или перезаписываемый массив 
-                     *      (достаточно хранить 255 последних пакетов)
+                     *      (для этого надо сделать список адресов и отправлять по ним)
+                     *     - сохранить его id в список или перезаписываемый массив
+                     *      (достаточно хранить 255 последних пакетов, как на сервере)
                      * Иначе забыть про этот пакет
                      */
                 }
@@ -121,10 +126,8 @@ namespace MeshNetworkServerClient
 
         public static void ClientStop()
         {
-            // Эту функцию тоже желательно не так коряво реализовать, 
-            //она на данный момент вообще не всего клиента завершает
-            receiveThread.Abort();
-            flag_stop = true;
+            cancellationTokenSource.Cancel();
+            tokenSource.Cancel();
         }
     }
 }
