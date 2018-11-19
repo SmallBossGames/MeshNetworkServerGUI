@@ -13,45 +13,52 @@ namespace MeshNetworkServerGUI
 {
     public partial class Form1 : Form
     {
+        private bool flag_server = false;
+        private bool flag_client = false;
         public Form1()
         {
             InitializeComponent();
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        private void button_start_Click(object sender, EventArgs e)
         {
-            using (var context = new ApplicationDbContext())
-            {
-                var package = new Package
-                {
-                    PackageId = 23,
-                    NodeId = 13,
-                    Time = DateTime.Now,
-                    Temperature = 14,
-                };
-                context.Packages.Add(PackageConverter.ToPackageModel(package));
-                await context.SaveChangesAsync();
+            if (!flag_server) { 
+                Task ServerTask = new Task(start_server);
+                ServerTask.Start();
+                button_start.BackColor = Color.Green;
+                button_start.Text = "Stop server";
+                flag_server = true;
             }
-
-
-            using (var context = new ApplicationDbContext())
-            {
-                var temp = await context.GetPackagesAsync();
-
-                TemperatureChart.Series.Clear();
-                for (int i = 0; i < temp.Count; i++)
-                {
-                    TemperatureChart.Series.Add($"Устройство {temp[i][0].NodeId}");
-                    TemperatureChart.Series[0].XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Time;
-                    foreach (var package in temp[i])
-                    {
-                        TemperatureChart.Series[i].Points.AddXY(package.Time, package.Temperature.Value);
-                    }
-                }
-                
+            else {
+                MeshNetworkServerSocket.SocketUdpServer.SocketListenEnd();
+                flag_server = false;
+                button_start.BackColor = Color.Red;
+                button_start.Text = "Start server";
             }
         }
+        
+        private void start_server()
+        {
+            MeshNetworkServerSocket.SocketUdpServer.SocketListenStart(8005);
+        }
 
-
+        private void button_client_Click(object sender, EventArgs e)
+        {
+            if (!flag_client)
+            {
+                Task ClientTask = new Task(MeshNetworkServerClient.SocketUdpClientTemplate.StartClient);
+                ClientTask.Start();
+                button_client.BackColor = Color.Green;
+                button_client.Text = "Stop test client";
+                flag_client = true;
+            }
+            else
+            {
+                MeshNetworkServerClient.SocketUdpClientTemplate.ClientStop();
+                flag_client = false;
+                button_client.BackColor = Color.Red;
+                button_client.Text = "Start test client";
+            }
+        }
     }
 }
