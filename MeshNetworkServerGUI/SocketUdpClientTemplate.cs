@@ -89,7 +89,7 @@ namespace MeshNetworkServerClient
 
         private static void ReceiveMessage()
         {
-            UdpClient receiver = new UdpClient(localPort);
+            UdpClient receiver = new UdpClient(localPort);            
             IPEndPoint remoteIp = null; // адрес входящего подключения
             try
             {
