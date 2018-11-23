@@ -21,9 +21,9 @@ namespace MeshNetworkServerClient
         /* Тут вы должны придумать как вы будете хранить все соседние узлы
         * Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
         * Здесь для примера храниться только 1 сосед*/
-        private static string remoteAddress = "127.0.0.1"; // адрес для отправки
-        private static int remotePort = 8005; // порт для отправки
-        private static int localPort = 8004; // порт для получения
+        private static string remoteAddress = "192.168.1.154"; // адрес для отправки
+        private static int remotePort = 8004; // порт для отправки
+        private static int localPort = 8005; // порт для получения
         /* из-за не динамических портов два раза клиента или двух клиентов на одном пк не запустить,
          * надо иначе реализовать этот момент, читайте метанит */
         static Task taskReceive;
@@ -32,6 +32,10 @@ namespace MeshNetworkServerClient
         static CancellationToken tokenReceive = cancellationTokenSource.Token;
         static CancellationTokenSource tokenSource = new CancellationTokenSource();
         static CancellationToken tokenSend = tokenSource.Token;
+
+        private static uint[] massId;
+        private static int n = 0;
+        private const int MASS_LENGHT = 255;
 
         public static void StartClient()
         {
@@ -62,7 +66,7 @@ namespace MeshNetworkServerClient
                     Package pack = GenerateData();
                     pack.ToBinary(data);
                     sender.Send(data, data.Length, remoteAddress, remotePort);
-                    Thread.Sleep(100);//задержка между сообщениями
+                    Thread.Sleep(500);//задержка между сообщениями
                 }
             }
             catch (Exception exception)
@@ -103,15 +107,12 @@ namespace MeshNetworkServerClient
                 {
                     byte[] data = receiver.Receive(ref remoteIp); // входящий пакет байт
                     Package pack = Package.FromBinary(data); //преобразование в пакет
-                    /*
-                     * Здесь нужно проверить id пакета (как? - смотри файл Package.cs и думай)
-                     * И если пакет с таким id ранее не был получен, то:
-                     *     - отправить всем соседям
-                     *      (для этого надо сделать список адресов и отправлять по ним)
-                     *     - сохранить его id в список или перезаписываемый массив
-                     *      (достаточно хранить 255 последних пакетов, как на сервере)
-                     * Иначе забыть про этот пакет
-                     */
+                    MeshNetworkServerGUI.Program.log.Debug("Client accepted.");
+                    //if (IsUnicue(data))
+                    //{ 
+                        receiver.Send(data, data.Length, remoteAddress, remotePort);
+                        MeshNetworkServerGUI.Program.log.Debug("Client resended.");
+                    //}
                 }
             }
             catch (Exception exception)
@@ -128,6 +129,19 @@ namespace MeshNetworkServerClient
         {
             cancellationTokenSource.Cancel();
             tokenSource.Cancel();
+        }
+
+        private static bool IsUnicue(byte[] data)
+        {
+            uint number = BitConverter.ToUInt32(data, 0);
+            for (int i = 0; i < MASS_LENGHT; i++)
+            {
+                if (massId[i] == number) return false;
+            }
+            massId[n] = number;
+            n++;
+            if (n == MASS_LENGHT) n = 0;
+            return true;
         }
     }
 }
