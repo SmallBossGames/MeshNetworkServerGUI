@@ -6,7 +6,7 @@ namespace MeshNetworkServerSocket
 {
     static class SocketUdpServer
     {
-        public static event EventHandler<MeshNetworkServerGUI.PackageModel> OnRecivePackage; 
+        public static event Action<MeshNetworkServerGUI.PackageModel> OnRecivePackage; 
 
         private static int localPort;
         private static Socket listeningSocket;
@@ -37,7 +37,7 @@ namespace MeshNetworkServerSocket
         {
             try
             {
-                IPEndPoint localIP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), localPort);
+                IPEndPoint localIP = new IPEndPoint(IPAddress.Parse(GetLocalIPAddress()), localPort);
                 listeningSocket.Bind(localIP);
 
                 while (true)
@@ -108,7 +108,6 @@ namespace MeshNetworkServerSocket
             MeshNetworkServerGUI.Program.log.Trace("Forsed stop");
         }
 
-
         private static bool IsUnicue(byte[] data)
         {
             uint number = BitConverter.ToUInt32(data, 0);
@@ -125,13 +124,26 @@ namespace MeshNetworkServerSocket
         private static void SavePackage(MeshNetworkServer.Package package)
         {
             var packageModel = MeshNetworkServerGUI.PackageConverter.ToPackageModel(package);
-
-            OnRecivePackage(null, packageModel);
             using (var context = new MeshNetworkServerGUI.ApplicationDbContext())
             {
                 context.Packages.Add(packageModel);
                 context.SaveChanges();
             }
         }
+
+        public static string GetLocalIPAddress()
+        {
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+
+            foreach (IPAddress ipAddress in host.AddressList)
+            {
+                if (ipAddress.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ipAddress.ToString();
+                }
+            }
+            throw new Exception("No network adapters with an IP v4");
+        }
+
     }
 }

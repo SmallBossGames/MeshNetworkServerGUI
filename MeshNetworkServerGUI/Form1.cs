@@ -21,6 +21,7 @@ namespace MeshNetworkServerGUI
                 ServerTask.Start();
                 button_start.BackColor = Color.Green;
                 button_start.Text = "Stop server";
+                ipAdress.Text = MeshNetworkServerSocket.SocketUdpServer.GetLocalIPAddress();
                 flag_server = true;
             }
             else {
