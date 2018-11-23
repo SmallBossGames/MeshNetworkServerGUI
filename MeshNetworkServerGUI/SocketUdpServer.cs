@@ -6,7 +6,7 @@ namespace MeshNetworkServerSocket
 {
     static class SocketUdpServer
     {
-        public static event EventHandler<MeshNetworkServerGUI.PackageModel> OnRecivePackage; 
+        public static event Action<MeshNetworkServerGUI.PackageModel> OnRecivePackage; 
 
         private static int localPort;
         private static Socket listeningSocket;
@@ -124,8 +124,6 @@ namespace MeshNetworkServerSocket
         private static void SavePackage(MeshNetworkServer.Package package)
         {
             var packageModel = MeshNetworkServerGUI.PackageConverter.ToPackageModel(package);
-
-            //OnRecivePackage(null, packageModel);
             using (var context = new MeshNetworkServerGUI.ApplicationDbContext())
             {
                 context.Packages.Add(packageModel);
