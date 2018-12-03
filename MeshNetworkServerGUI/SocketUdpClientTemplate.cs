@@ -110,8 +110,8 @@ namespace MeshNetworkServerClient
                     MeshNetworkServerGUI.Program.log.Debug("Client accepted.");
                     //if (IsUnicue(data))
                     //{ 
-                        receiver.Send(data, data.Length, remoteAddress, remotePort);
-                        MeshNetworkServerGUI.Program.log.Debug("Client resended.");
+                    receiver.Send(data, data.Length, remoteAddress, remotePort);
+                    MeshNetworkServerGUI.Program.log.Debug("Client resended.");
                     //}
                 }
             }
