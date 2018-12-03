@@ -88,9 +88,11 @@ namespace MeshNetworkServerClient
             return pack;
         }
 
+        static UdpClient receiver;
+
         private static void ReceiveMessage()
         {
-            UdpClient receiver = new UdpClient(localPort);            
+            receiver = new UdpClient(localPort);            
             IPEndPoint remoteIp = null; // адрес входящего подключения
             try
             {
@@ -111,7 +113,7 @@ namespace MeshNetworkServerClient
             }
             catch (Exception exception)
             {
-                MessageBox.Show(exception.Message);
+               // MessageBox.Show(exception.Message);
             }
             finally
             {
@@ -123,6 +125,7 @@ namespace MeshNetworkServerClient
         {
             // Эту функцию тоже желательно не так коряво реализовать, 
             //она на данный момент вообще не всего клиента завершает
+            receiver.Close();
             receiveThread.Abort();
             flag_stop = true;
         }
