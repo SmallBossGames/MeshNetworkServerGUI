@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace MeshNetworkServerClient
 {
@@ -21,7 +22,7 @@ namespace MeshNetworkServerClient
         /* Тут вы должны придумать как вы будете хранить все соседние узлы
         * Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
         * Здесь для примера храниться только 1 сосед*/
-        private static string remoteAddress = "192.168.1.154"; // адрес для отправки
+        private static string remoteAddress = "192.168.100.4"; // адрес для отправки
         private static int remotePort = 8004; // порт для отправки
         private static int localPort = 8005; // порт для получения
         /* из-за не динамических портов два раза клиента или двух клиентов на одном пк не запустить,
@@ -34,6 +35,7 @@ namespace MeshNetworkServerClient
         static CancellationToken tokenSend = tokenSource.Token;
 
         private static uint[] massId;
+        static List<uint> IdArray = new List<uint>();
         private static int n = 0;
         private const int MASS_LENGHT = 255;
 
@@ -62,11 +64,12 @@ namespace MeshNetworkServerClient
                 {
                     if (token.IsCancellationRequested) break;
                     /* Здесь заполняете данные о ваших датчиках при помощи методов в файле Program.cs
-                     * Для примерпа представлен вызов функции GenerateData, но это просто пример!*/
+                     * Для примера представлен вызов функции GenerateData, но это просто пример!*/
                     Package pack = GenerateData();
                     pack.ToBinary(data);
                     sender.Send(data, data.Length, remoteAddress, remotePort);
-                    Thread.Sleep(500);//задержка между сообщениями
+                    IdArray.Add(pack.PackageId);
+                    Thread.Sleep(500); // задержка между сообщениями
                 }
             }
             catch (Exception exception)
@@ -84,7 +87,7 @@ namespace MeshNetworkServerClient
             Random rand = new Random();
             Package pack = new Package();
             /* Здесь вы генирируете пакеты с реалистичными рандомными значениями
-            *  Не просто рандом, а хотябы в реалистичных границах
+            *  Не просто рандом, а хотя бы в реалистичных границах
             *  Для понимания смотрите файл Package.cs */
             pack.PackageId = (uint)rand.Next(100);  // Для примера
             pack.NodeId = 1;                        // Для примера
@@ -96,23 +99,27 @@ namespace MeshNetworkServerClient
             pack.Temperature = 11;                  // Для примера
             //
             return pack;
-        }
+        } 
+
         private static void ReceiveMessage(CancellationToken token)
         {
-            UdpClient receiver = new UdpClient(localPort);
-            IPEndPoint remoteIp = null; // адрес входящего подключения
+            UdpClient receiver = new UdpClient(remotePort);
+            IPEndPoint remoteIp = new IPEndPoint(IPAddress.Parse(remoteAddress), remotePort); // адрес входящего подключения
             try
             {
                 while (true)
                 {
+                    MeshNetworkServerGUI.Program.log.Debug("Client is waiting your orders.");
                     byte[] data = receiver.Receive(ref remoteIp); // входящий пакет байт
-                    Package pack = Package.FromBinary(data); //преобразование в пакет
+                    Package pack = Package.FromBinary(data); // преобразование в пакет
                     MeshNetworkServerGUI.Program.log.Debug("Client accepted.");
-                    //if (IsUnicue(data))
-                    //{ 
-                    receiver.Send(data, data.Length, remoteAddress, remotePort);
-                    MeshNetworkServerGUI.Program.log.Debug("Client resended.");
-                    //}
+                    if (IsUnicueList(data))
+                    {
+                        receiver.Send(data, data.Length, remoteAddress, remotePort);
+                        IdArray.Add(pack.PackageId);
+                        MeshNetworkServerGUI.Program.log.Debug("Client resended.");
+                    }
+                    else MeshNetworkServerGUI.Program.log.Debug("Client is not unique.");
                 }
             }
             catch (Exception exception)
@@ -141,6 +148,25 @@ namespace MeshNetworkServerClient
             massId[n] = number;
             n++;
             if (n == MASS_LENGHT) n = 0;
+            return true;
+        }
+
+        static bool IsUnicueList(byte[] data)
+        {
+            var IDOfPackage = Package.FromBinary(data);
+
+            if (IdArray.Count == 0)
+            {
+                IdArray.Add(IDOfPackage.PackageId);
+                return true;
+            }
+
+            foreach (var a in IdArray)
+            {
+                if (a == IDOfPackage.PackageId) return false;                
+            }
+
+            IdArray.Add(IDOfPackage.PackageId);
             return true;
         }
     }

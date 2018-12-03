@@ -17,7 +17,7 @@ namespace MeshNetworkServer
 
         public byte[] ToBinary(byte[] pool)
         {
-            if(pool.Length < bufferSize)
+            if (pool.Length < bufferSize)
             {
                 MeshNetworkServerGUI.Program.log.Warn("Received package invalid in ToBinary.");
                 throw new ArgumentException();
@@ -28,7 +28,6 @@ namespace MeshNetworkServer
             WriteDataToArray(pool, BitConverter.GetBytes(PackageId), 0, 4);
             WriteDataToArray(pool, BitConverter.GetBytes(NodeId), 4, 2);
             WriteDataToArray(pool, BitConverter.GetBytes(Time.Ticks), 6, 8);
-
 
             if (Pressure != null)
             {
@@ -54,7 +53,7 @@ namespace MeshNetworkServer
                 flags |= SensorFlags.Humidity;
             }
 
-            if(IsFire != null)
+            if (IsFire != null)
             {
                 if (IsFire.Value)
                 {
@@ -122,14 +121,14 @@ namespace MeshNetworkServer
     }
 
     [Flags]
-    enum SensorFlags:byte
+    enum SensorFlags : byte
     {
-        None =         0b00000000,
-        Pressure =     0b00000001,
-        Lighting =     0b00000010,
-        Temperature =  0b00000100,
-        Humidity =     0b00001000,
+        None = 0b00000000,
+        Pressure = 0b00000001,
+        Lighting = 0b00000010,
+        Temperature = 0b00000100,
+        Humidity = 0b00001000,
         IsFireSensor = 0b00010000,
-        IsFireData =   0b00100000,
+        IsFireData = 0b00100000,
     }
 }
