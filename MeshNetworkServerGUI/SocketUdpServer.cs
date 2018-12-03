@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
-using MeshNetworkServer;
-using MeshNetworkServerGUI;
 
 namespace MeshNetworkServerSocket
 {
     static class SocketUdpServer
     {
-        public static event EventHandler<PackageModel> OnRecivePackage; 
+        public static event Action<MeshNetworkServerGUI.PackageModel> OnRecivePackage; 
 
         private static int localPort;
         private static Socket listeningSocket;
@@ -24,10 +20,6 @@ namespace MeshNetworkServerSocket
             try
             {
                 listeningSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                /* Заготовка для слушанья в отдельном потоке:
-                 * Task listeningTask = new Task(Listen);
-                 * listeningTask.Start();
-                 */
                 Listen();
             }
             catch (Exception ex)
@@ -45,7 +37,7 @@ namespace MeshNetworkServerSocket
         {
             try
             {
-                IPEndPoint localIP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), localPort);
+                IPEndPoint localIP = new IPEndPoint(IPAddress.Parse(GetLocalIPAddress()), localPort);
                 listeningSocket.Bind(localIP);
 
                 while (true)
@@ -77,7 +69,6 @@ namespace MeshNetworkServerSocket
                             {
                                 MeshNetworkServer.Package packIn = MeshNetworkServer.Package.FromBinary(dataIn);
                                 MeshNetworkServerGUI.Program.log.Debug("Received unique package.");
-
                                 SavePackage(packIn);
                             }
                             else
@@ -113,12 +104,9 @@ namespace MeshNetworkServerSocket
 
         public static void SocketListenEnd()
         {
-            //TODO : исправить остановку сервера, неправильно завершается listen, 
-            //т.к. прерывается блокирующая операция ReceiveFrom (ну, в приниципе, и так сойдёт)
             Close();
             MeshNetworkServerGUI.Program.log.Trace("Forsed stop");
         }
-
 
         private static bool IsUnicue(byte[] data)
         {
@@ -133,16 +121,29 @@ namespace MeshNetworkServerSocket
             return true; 
         }
 
-        private static void SavePackage(Package package)
+        private static void SavePackage(MeshNetworkServer.Package package)
         {
-            var packageModel = PackageConverter.ToPackageModel(package);
-
-            OnRecivePackage(null, packageModel);
-            using (var context = new ApplicationDbContext())
+            var packageModel = MeshNetworkServerGUI.PackageConverter.ToPackageModel(package);
+            using (var context = new MeshNetworkServerGUI.ApplicationDbContext())
             {
                 context.Packages.Add(packageModel);
                 context.SaveChanges();
             }
         }
+
+        public static string GetLocalIPAddress()
+        {
+            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+
+            foreach (IPAddress ipAddress in host.AddressList)
+            {
+                if (ipAddress.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ipAddress.ToString();
+                }
+            }
+            throw new Exception("No network adapters with an IP v4");
+        }
+
     }
 }

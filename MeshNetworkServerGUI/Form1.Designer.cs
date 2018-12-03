@@ -33,6 +33,7 @@
             this.showCharts = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.nodeNumberTextBox = new System.Windows.Forms.TextBox();
+            this.ipAdress = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // button_start
@@ -83,11 +84,20 @@
             this.nodeNumberTextBox.Size = new System.Drawing.Size(122, 20);
             this.nodeNumberTextBox.TabIndex = 6;
             // 
+            // ipAdress
+            // 
+            this.ipAdress.AutoSize = true;
+            this.ipAdress.Location = new System.Drawing.Point(12, 9);
+            this.ipAdress.Name = "ipAdress";
+            this.ipAdress.Size = new System.Drawing.Size(0, 13);
+            this.ipAdress.TabIndex = 7;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(246, 239);
+            this.Controls.Add(this.ipAdress);
             this.Controls.Add(this.nodeNumberTextBox);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.showCharts);
@@ -107,6 +117,7 @@
         private System.Windows.Forms.Button showCharts;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox nodeNumberTextBox;
+        private System.Windows.Forms.Label ipAdress;
     }
 }
 

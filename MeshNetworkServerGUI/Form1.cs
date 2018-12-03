@@ -1,12 +1,5 @@
-﻿using MeshNetworkServer;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Entity;
+﻿using System;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -28,6 +21,7 @@ namespace MeshNetworkServerGUI
                 ServerTask.Start();
                 button_start.BackColor = Color.Green;
                 button_start.Text = "Stop server";
+                ipAdress.Text = MeshNetworkServerSocket.SocketUdpServer.GetLocalIPAddress();
                 flag_server = true;
             }
             else {

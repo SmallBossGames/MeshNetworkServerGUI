@@ -1,16 +1,7 @@
-﻿using MeshNetworkServer;
-using MeshNetworkServerSocket;
+﻿using MeshNetworkServerSocket;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Entity;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace MeshNetworkServerGUI
 {
@@ -23,15 +14,53 @@ namespace MeshNetworkServerGUI
             _nodeId = nodeId;
             
             InitializeComponent();
+
+            /*Random rand = new Random();
+
+            OnRecivePackage(new PackageModel
+            {
+                PackageId = (uint)rand.Next(100),  // Для примера
+                NodeId = 1,                        // Для примера
+                Time = DateTime.Now,               // Для примера
+                Humidity = 11,                     // Для примера
+                IsFire = false,                    // Для примера
+                Lighting = 11,                     // Для примера
+                Pressure = 11,                     // Для примера
+                Temperature = 11,
+            });*/
+
+            LoadQueryData();
         }
 
-        void OnRecivePackage(object sender, PackageModel package)
+        void OnRecivePackage(PackageModel package)
         {
             if (package.NodeId != _nodeId)
             {
                 return;
             }
 
+            DrawCharts(package);
+        }
+
+        void LoadQueryData()
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                var query =
+                    from package in context.Packages
+                    where package.NodeId == _nodeId
+                    select package;
+
+                foreach (var item in query)
+                {
+                    DrawCharts(item);
+                }
+            }
+            
+        }
+
+        void DrawCharts(PackageModel package)
+        {
             if (package.Temperature != null)
             {
                 temperatureChart.Series[0].Points.AddXY(package.Time, package.Temperature.Value);
