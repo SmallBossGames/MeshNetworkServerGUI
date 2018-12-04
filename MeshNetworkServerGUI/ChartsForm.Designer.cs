@@ -148,8 +148,6 @@
             this.Controls.Add(this.temperatureChart);
             this.Name = "ChartsForm";
             this.Text = "ChartsForm";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ChartsForm_FormClosing);
-            this.Load += new System.EventHandler(this.ChartsForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.temperatureChart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.isFireChart)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.lighteingChart)).EndInit();

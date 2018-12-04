@@ -6,8 +6,6 @@ namespace MeshNetworkServerSocket
 {
     static class SocketUdpServer
     {
-        public static event Action<MeshNetworkServerGUI.PackageModel> OnRecivePackage;
-
         private static int localPort;
         private static Socket listeningSocket;
         private static uint[] massId;

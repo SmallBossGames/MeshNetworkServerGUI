@@ -86,15 +86,5 @@ namespace MeshNetworkServerGUI
                 humidityChart.Series[0].Points.AddXY(package.Time, package.Humidity.Value);
             }
         }
-
-        private void ChartsForm_Load(object sender, EventArgs e)
-        {
-            SocketUdpServer.OnRecivePackage += OnRecivePackage;
-        }
-
-        private void ChartsForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            SocketUdpServer.OnRecivePackage -= OnRecivePackage;
-        }
     }
 }
