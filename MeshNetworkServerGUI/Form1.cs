@@ -35,7 +35,7 @@ namespace MeshNetworkServerGUI
         
         private void start_server()
         {
-            MeshNetworkServerSocket.SocketUdpServer.SocketListenStart(8005);
+            MeshNetworkServerSocket.SocketUdpServer.SocketListenStart(8004);
         }
 
         private void button_client_Click(object sender, EventArgs e)
