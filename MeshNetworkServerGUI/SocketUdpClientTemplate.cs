@@ -19,10 +19,15 @@ namespace MeshNetworkServerClient
      */
     class SocketUdpClientTemplate
     {
+        struct u_id
+        {
+            public uint pack;
+            public ushort node;
+        };
         /* Тут вы должны придумать как вы будете хранить все соседние узлы
         * Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
         * Здесь для примера храниться только 1 сосед*/
-        private static string remoteAddress = "192.168.1.86"; // адрес для отправки
+        private static string remoteAddress = "192.168.1.42"; // адрес для отправки
         private static int remotePort = 8005; // порт для отправки
         private static int localPort = 8004; // порт для получения
         /* из-за не динамических портов два раза клиента или двух клиентов на одном пк не запустить,
@@ -34,7 +39,8 @@ namespace MeshNetworkServerClient
         static CancellationTokenSource tokenSource = new CancellationTokenSource();
         static CancellationToken tokenSend = tokenSource.Token;
 
-        private static uint[] massId;
+        //private static uint[] massId;
+        private static u_id[] massId;
         static List<uint> IdArray = new List<uint>();
         private static int n = 0;
         private const int MASS_LENGHT = 255;
@@ -140,12 +146,14 @@ namespace MeshNetworkServerClient
 
         private static bool IsUnicue(byte[] data)
         {
+            ushort node = BitConverter.ToUInt16(data, 4);
             uint number = BitConverter.ToUInt32(data, 0);
             for (int i = 0; i < MASS_LENGHT; i++)
             {
-                if (massId[i] == number) return false;
+                if (massId[i].pack == number && massId[i].node == node) return false;
             }
-            massId[n] = number;
+            massId[n].pack = number;
+            massId[n].node = node;
             n++;
             if (n == MASS_LENGHT) n = 0;
             return true;
