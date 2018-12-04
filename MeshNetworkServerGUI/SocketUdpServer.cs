@@ -6,11 +6,11 @@ namespace MeshNetworkServerSocket
 {
     static class SocketUdpServer
     {
-        public static event Action<MeshNetworkServerGUI.PackageModel> OnRecivePackage; 
+        public static event Action<MeshNetworkServerGUI.PackageModel> OnRecivePackage;
 
         private static int localPort;
         private static Socket listeningSocket;
-        private static uint []massId;
+        private static uint[] massId;
         private static int n = 0;
         private const int MASS_LENGHT = 255;
         public static void SocketListenStart(int port)
@@ -53,7 +53,7 @@ namespace MeshNetworkServerSocket
                         {
                             bytes = listeningSocket.ReceiveFrom(dataIn, ref remoteIp);
                         }
-                        catch(Exception exept)
+                        catch (Exception exept)
                         {
                             MeshNetworkServerGUI.Program.log.Trace("Server hard shutdown: {0}", exept.Message);
                             flag_close = true;
@@ -64,7 +64,7 @@ namespace MeshNetworkServerSocket
                             MeshNetworkServerGUI.Program.log.Warn("Received package invalid.");
                         }
                         else
-                        { 
+                        {
                             if (IsUnicue(dataIn))
                             {
                                 MeshNetworkServer.Package packIn = MeshNetworkServer.Package.FromBinary(dataIn);
@@ -111,14 +111,14 @@ namespace MeshNetworkServerSocket
         private static bool IsUnicue(byte[] data)
         {
             uint number = BitConverter.ToUInt32(data, 0);
-            for(int i = 0; i < MASS_LENGHT; i++)
+            for (int i = 0; i < MASS_LENGHT; i++)
             {
                 if (massId[i] == number) return false;
             }
             massId[n] = number;
             n++;
             if (n == MASS_LENGHT) n = 0;
-            return true; 
+            return true;
         }
 
         private static void SavePackage(MeshNetworkServer.Package package)
