@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace MeshNetworkServerGUI
 {
@@ -69,6 +70,15 @@ namespace MeshNetworkServerGUI
             }
 
             
+        }
+
+        private async void clearBase_Click(object sender, EventArgs e)
+        {
+            using (var context = new ApplicationDbContext())
+            {
+                await context.Database.ExecuteSqlCommandAsync($"TRUNCATE TABLE [PackageModels]");
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
