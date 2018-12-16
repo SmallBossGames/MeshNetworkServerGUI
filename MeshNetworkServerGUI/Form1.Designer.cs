@@ -35,6 +35,7 @@
             this.nodeNumberTextBox = new System.Windows.Forms.TextBox();
             this.ipAdress = new System.Windows.Forms.Label();
             this.clearBase = new System.Windows.Forms.Button();
+            this.showStatisticButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button_start
@@ -61,7 +62,7 @@
             // 
             // showCharts
             // 
-            this.showCharts.Location = new System.Drawing.Point(54, 178);
+            this.showCharts.Location = new System.Drawing.Point(54, 267);
             this.showCharts.Name = "showCharts";
             this.showCharts.Size = new System.Drawing.Size(122, 25);
             this.showCharts.TabIndex = 4;
@@ -72,7 +73,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(51, 135);
+            this.label1.Location = new System.Drawing.Point(51, 224);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(66, 13);
             this.label1.TabIndex = 5;
@@ -80,7 +81,7 @@
             // 
             // nodeNumberTextBox
             // 
-            this.nodeNumberTextBox.Location = new System.Drawing.Point(54, 152);
+            this.nodeNumberTextBox.Location = new System.Drawing.Point(54, 241);
             this.nodeNumberTextBox.Name = "nodeNumberTextBox";
             this.nodeNumberTextBox.Size = new System.Drawing.Size(122, 20);
             this.nodeNumberTextBox.TabIndex = 6;
@@ -95,7 +96,7 @@
             // 
             // clearBase
             // 
-            this.clearBase.Location = new System.Drawing.Point(54, 209);
+            this.clearBase.Location = new System.Drawing.Point(54, 298);
             this.clearBase.Name = "clearBase";
             this.clearBase.Size = new System.Drawing.Size(122, 25);
             this.clearBase.TabIndex = 8;
@@ -103,15 +104,26 @@
             this.clearBase.UseVisualStyleBackColor = true;
             this.clearBase.Click += new System.EventHandler(this.clearBase_Click);
             // 
+            // showStatisticButton
+            // 
+            this.showStatisticButton.Location = new System.Drawing.Point(54, 161);
+            this.showStatisticButton.Name = "showStatisticButton";
+            this.showStatisticButton.Size = new System.Drawing.Size(122, 35);
+            this.showStatisticButton.TabIndex = 4;
+            this.showStatisticButton.Text = "Показать статистику";
+            this.showStatisticButton.UseVisualStyleBackColor = true;
+            this.showStatisticButton.Click += new System.EventHandler(this.showStatisticButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(246, 239);
+            this.ClientSize = new System.Drawing.Size(246, 362);
             this.Controls.Add(this.clearBase);
             this.Controls.Add(this.ipAdress);
             this.Controls.Add(this.nodeNumberTextBox);
             this.Controls.Add(this.label1);
+            this.Controls.Add(this.showStatisticButton);
             this.Controls.Add(this.showCharts);
             this.Controls.Add(this.button_client);
             this.Controls.Add(this.button_start);
@@ -131,6 +143,7 @@
         private System.Windows.Forms.TextBox nodeNumberTextBox;
         private System.Windows.Forms.Label ipAdress;
         private System.Windows.Forms.Button clearBase;
+        private System.Windows.Forms.Button showStatisticButton;
     }
 }
 
