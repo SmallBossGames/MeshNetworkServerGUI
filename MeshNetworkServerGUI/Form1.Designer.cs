@@ -128,7 +128,7 @@
             this.Controls.Add(this.button_client);
             this.Controls.Add(this.button_start);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "MESH-сервер";
             this.ResumeLayout(false);
             this.PerformLayout();
 

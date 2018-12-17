@@ -13,7 +13,7 @@ namespace MeshNetworkServer
         public byte? Humidity { get; set; }
         public bool? IsFire { get; set; }
 
-        public const int bufferSize = 21; //changed private to public
+        public const int bufferSize = 21;
 
         public byte[] ToBinary(byte[] pool)
         {
@@ -69,13 +69,6 @@ namespace MeshNetworkServer
 
         public static Package FromBinary(byte[] buffer)
         {
-            /* пусть лучше проверяется на этапе загрузке по сокету
-            if (buffer.Length < bufferSize)
-            {
-                throw new ArgumentException("Buffer must be greater than 22");
-            }
-            */
-
             var data = new Package();
             var flags = (SensorFlags)buffer[20];
 

@@ -77,7 +77,8 @@ namespace MeshNetworkServerSocket
                             }
                             else
                             {
-                                MeshNetworkServerGUI.Program.log.Debug("Received retry package.");
+                                ushort node = BitConverter.ToUInt16(dataIn, 4);
+                                MeshNetworkServerGUI.Program.log.Debug("Received retry package from: {0}", node);
                             }
                         }
                     }
@@ -122,8 +123,7 @@ namespace MeshNetworkServerSocket
             }
             massId[n].pack = number;
             massId[n].node = node;
-            n++;
-            if (n == MASS_LENGHT) n = 0;
+            n = (n + 1) % MASS_LENGHT;
             return true;
         }
 
