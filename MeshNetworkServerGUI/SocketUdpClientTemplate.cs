@@ -27,8 +27,8 @@ namespace MeshNetworkServerClient
         /* Тут вы должны придумать как вы будете хранить все соседние узлы
         * Лучше, если ввод параметров соседних узлов будет из интерфейса или консоли
         * Здесь для примера храниться только 1 сосед*/
-        private static string remoteAddress = "192.168.1.42"; // адрес для отправки
-        private static int remotePort = 8005; // порт для отправки
+        private static string remoteAddress = "192.168.1.3"; // адрес для отправки
+        private static int remotePort = 8004; // порт для отправки
         private static int localPort = 8004; // порт для получения
         /* из-за не динамических портов два раза клиента или двух клиентов на одном пк не запустить,
          * надо иначе реализовать этот момент, читайте метанит */
@@ -96,7 +96,7 @@ namespace MeshNetworkServerClient
             *  Не просто рандом, а хотя бы в реалистичных границах
             *  Для понимания смотрите файл Package.cs */
             pack.PackageId = (uint)rand.Next(100);  // Для примера
-            pack.NodeId = 1;                        // Для примера
+            pack.NodeId = 2;                        // Для примера
             pack.Time = DateTime.Now;               // Для примера
             pack.Humidity = 11;                     // Для примера
             pack.IsFire = false;                    // Для примера

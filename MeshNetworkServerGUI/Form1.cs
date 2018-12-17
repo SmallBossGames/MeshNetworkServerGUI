@@ -80,5 +80,10 @@ namespace MeshNetworkServerGUI
                 await context.SaveChangesAsync();
             }
         }
+
+        private void showStatisticButton_Click(object sender, EventArgs e)
+        {
+            (new NetworkInfoChart()).Show();
+        }
     }
 }

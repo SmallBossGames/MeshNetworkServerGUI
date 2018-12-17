@@ -85,6 +85,8 @@ namespace MeshNetworkServerGUI
             {
                 humidityChart.Series[0].Points.AddXY(package.Time, package.Humidity.Value);
             }
+
+            deviceStatusChart.Series[0].Points.AddXY(package.Time, true);
         }
     }
 }
